@@ -19,7 +19,7 @@
 */
 
 /**
- * @file daemontest_post.c
+ * @file test_postform.c
  * @brief  Testcase for libmicrohttpd POST operations using multipart/postform data
  * @author Christian Grothoff
  */
@@ -31,6 +31,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <gcrypt.h>
 
 #ifndef WINDOWS
 #include <unistd.h>
@@ -45,6 +46,21 @@ struct CBC
   size_t size;
 };
 
+
+static void
+completed_cb (void *cls,
+	      struct MHD_Connection *connection,
+	      void **con_cls,
+	      enum MHD_RequestTerminationCode toe)
+{
+  struct MHD_PostProcessor *pp = *con_cls;
+
+  if (NULL != pp)
+    MHD_destroy_post_processor (pp);
+  *con_cls = NULL;
+}
+
+
 static size_t
 copyBuffer (void *ptr, size_t size, size_t nmemb, void *ctx)
 {
@@ -56,6 +72,7 @@ copyBuffer (void *ptr, size_t size, size_t nmemb, void *ctx)
   cbc->pos += size * nmemb;
   return size * nmemb;
 }
+
 
 /**
  * Note that this post_iterator is not perfect
@@ -84,6 +101,7 @@ post_iterator (void *cls,
     (*eok) |= 2;
   return MHD_YES;
 }
+
 
 static int
 ahc_echo (void *cls,
@@ -157,7 +175,9 @@ testInternalPost ()
   cbc.size = 2048;
   cbc.pos = 0;
   d = MHD_start_daemon (MHD_USE_SELECT_INTERNALLY | MHD_USE_DEBUG,
-                        1080, NULL, NULL, &ahc_echo, NULL, MHD_OPTION_END);
+                        1080, NULL, NULL, &ahc_echo, NULL, 
+			MHD_OPTION_NOTIFY_COMPLETED, &completed_cb, NULL,			
+			MHD_OPTION_END);
   if (d == NULL)
     return 1;
   c = curl_easy_init ();
@@ -211,7 +231,9 @@ testMultithreadedPost ()
   cbc.size = 2048;
   cbc.pos = 0;
   d = MHD_start_daemon (MHD_USE_THREAD_PER_CONNECTION | MHD_USE_DEBUG,
-                        1081, NULL, NULL, &ahc_echo, NULL, MHD_OPTION_END);
+                        1081, NULL, NULL, &ahc_echo, NULL, 
+			MHD_OPTION_NOTIFY_COMPLETED, &completed_cb, NULL,			
+			MHD_OPTION_END);
   if (d == NULL)
     return 16;
   c = curl_easy_init ();
@@ -266,7 +288,9 @@ testMultithreadedPoolPost ()
   cbc.pos = 0;
   d = MHD_start_daemon (MHD_USE_SELECT_INTERNALLY | MHD_USE_DEBUG,
                         1081, NULL, NULL, &ahc_echo, NULL,
-                        MHD_OPTION_THREAD_POOL_SIZE, 4, MHD_OPTION_END);
+                        MHD_OPTION_THREAD_POOL_SIZE, 4, 
+			MHD_OPTION_NOTIFY_COMPLETED, &completed_cb, NULL,			
+			MHD_OPTION_END);
   if (d == NULL)
     return 16;
   c = curl_easy_init ();
@@ -330,7 +354,9 @@ testExternalPost ()
   cbc.size = 2048;
   cbc.pos = 0;
   d = MHD_start_daemon (MHD_USE_DEBUG,
-                        1082, NULL, NULL, &ahc_echo, NULL, MHD_OPTION_END);
+                        1082, NULL, NULL, &ahc_echo, NULL, 
+			MHD_OPTION_NOTIFY_COMPLETED, &completed_cb, NULL,			
+			MHD_OPTION_END);
   if (d == NULL)
     return 256;
   c = curl_easy_init ();
@@ -437,12 +463,15 @@ testExternalPost ()
 }
 
 
-
 int
 main (int argc, char *const *argv)
 {
   unsigned int errorCount = 0;
 
+  gcry_control (GCRYCTL_ENABLE_QUICK_RANDOM, 0);
+#ifdef GCRYCTL_INITIALIZATION_FINISHED
+  gcry_control (GCRYCTL_INITIALIZATION_FINISHED, 0);
+#endif
   oneone = NULL != strstr (argv[0], "11");
   if (0 != curl_global_init (CURL_GLOBAL_WIN32))
     return 2;

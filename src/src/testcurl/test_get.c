@@ -145,6 +145,7 @@ testInternalGet (int poll_flag)
   return 0;
 }
 
+
 static int
 testMultithreadedGet (int poll_flag)
 {
@@ -193,6 +194,7 @@ testMultithreadedGet (int poll_flag)
     return 128;
   return 0;
 }
+
 
 static int
 testMultithreadedPoolGet (int poll_flag)
@@ -243,6 +245,7 @@ testMultithreadedPoolGet (int poll_flag)
     return 128;
   return 0;
 }
+
 
 static int
 testExternalGet ()
@@ -366,6 +369,7 @@ testExternalGet ()
   return 0;
 }
 
+
 static int
 testUnknownPortGet (int poll_flag)
 {
@@ -397,7 +401,7 @@ testUnknownPortGet (int poll_flag)
   if (di == NULL)
     return 65536;
 
-  if (0 != getsockname(di->listen_fd, &addr, &addr_len))
+  if (0 != getsockname(di->listen_fd, (struct sockaddr *) &addr, &addr_len))
     return 131072;
 
   if (addr.sin_family != AF_INET)
@@ -448,7 +452,8 @@ testStopRace (int poll_flag)
     struct MHD_Daemon *d;
     
     d = MHD_start_daemon (MHD_USE_THREAD_PER_CONNECTION | MHD_USE_DEBUG | poll_flag,
-                         1081, NULL, NULL, &ahc_echo, "GET", MHD_OPTION_END);
+                         1081, NULL, NULL, &ahc_echo, "GET",
+                         MHD_OPTION_CONNECTION_TIMEOUT, 5, MHD_OPTION_END);
     if (d == NULL)
        return 16;
     
@@ -467,6 +472,7 @@ testStopRace (int poll_flag)
     if (CONNECT (fd, (struct sockaddr *)(&sin), sizeof(sin)) < 0)
     {
        fprintf(stderr, "connect: %m\n");
+       CLOSE (fd);
        return 512;
     }
     
@@ -505,6 +511,11 @@ main (int argc, char *const *argv)
   errorCount += testMultithreadedPoolGet (MHD_USE_POLL);
   errorCount += testUnknownPortGet (MHD_USE_POLL);
   errorCount += testStopRace (MHD_USE_POLL);
+#endif
+#if EPOLL_SUPPORT
+  errorCount += testInternalGet (MHD_USE_EPOLL_LINUX_ONLY);
+  errorCount += testMultithreadedPoolGet (MHD_USE_EPOLL_LINUX_ONLY);
+  errorCount += testUnknownPortGet (MHD_USE_EPOLL_LINUX_ONLY);
 #endif
   if (errorCount != 0)
     fprintf (stderr, "Error (code: %u)\n", errorCount);

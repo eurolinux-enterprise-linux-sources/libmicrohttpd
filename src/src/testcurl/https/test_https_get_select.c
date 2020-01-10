@@ -19,7 +19,7 @@
  */
 
 /**
- * @file mhds_get_test.c
+ * @file test_https_get_select.c
  * @brief  Testcase for libmicrohttpd HTTPS GET operations
  * @author Sagie Amir
  */
@@ -71,8 +71,9 @@ ahc_echo (void *cls,
   return ret;
 }
 
+
 static int
-testExternalGet ()
+testExternalGet (int flags)
 {
   struct MHD_Daemon *d;
   CURL *c;
@@ -88,12 +89,13 @@ testExternalGet ()
   struct CURLMsg *msg;
   time_t start;
   struct timeval tv;
+  const char *aes256_sha = "AES256-SHA";
 
   multi = NULL;
   cbc.buf = buf;
   cbc.size = 2048;
   cbc.pos = 0;
-  d = MHD_start_daemon (MHD_USE_DEBUG | MHD_USE_SSL,
+  d = MHD_start_daemon (MHD_USE_DEBUG | MHD_USE_SSL | flags,
                         1082, NULL, NULL, &ahc_echo, "GET", 
                         MHD_OPTION_HTTPS_MEM_KEY, srv_key_pem,
                         MHD_OPTION_HTTPS_MEM_CERT, srv_self_signed_cert_pem,
@@ -101,11 +103,8 @@ testExternalGet ()
   if (d == NULL)
     return 256;
 
-  char *aes256_sha = "AES256-SHA";
   if (curl_uses_nss_ssl() == 0)
-    {
-      aes256_sha = "rsa_aes_256_sha";
-    }
+    aes256_sha = "rsa_aes_256_sha";   
 
   c = curl_easy_init ();
   curl_easy_setopt (c, CURLOPT_URL, "https://127.0.0.1:1082/hello_world");
@@ -207,22 +206,22 @@ testExternalGet ()
   return 0;
 }
 
-GCRY_THREAD_OPTION_PTHREAD_IMPL;
 
 int
 main (int argc, char *const *argv)
 {
   unsigned int errorCount = 0;
 
-  gcry_control (GCRYCTL_SET_THREAD_CBS, &gcry_threads_pthread);
-  if (!gcry_check_version (GCRYPT_VERSION))
-    abort ();
   if (0 != curl_global_init (CURL_GLOBAL_ALL))
     {
       fprintf (stderr, "Error: %s\n", strerror (errno));
       return -1;
     }
-  if (0 != (errorCount = testExternalGet ()))
+#if EPOLL_SUPPORT
+  if (0 != (errorCount = testExternalGet (MHD_USE_EPOLL_LINUX_ONLY)))
+    fprintf (stderr, "Fail: %d\n", errorCount);
+#endif
+  if (0 != (errorCount = testExternalGet (0)))
     fprintf (stderr, "Fail: %d\n", errorCount);
   curl_global_cleanup ();
   return errorCount != 0;

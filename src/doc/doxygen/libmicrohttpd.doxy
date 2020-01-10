@@ -5,8 +5,8 @@
 #---------------------------------------------------------------------------
 DOXYFILE_ENCODING      = UTF-8
 PROJECT_NAME           = "GNU libmicrohttpd"
-PROJECT_NUMBER         = 0.9.5
-OUTPUT_DIRECTORY       = doc/doxygen/
+PROJECT_NUMBER         = 0.9.29
+OUTPUT_DIRECTORY       = .
 CREATE_SUBDIRS         = YES
 OUTPUT_LANGUAGE        = English
 BRIEF_MEMBER_DESC      = YES
@@ -25,13 +25,13 @@ ABBREVIATE_BRIEF       = "The $name class" \
 ALWAYS_DETAILED_SEC    = NO
 INLINE_INHERITED_MEMB  = NO
 FULL_PATH_NAMES        = YES
-STRIP_FROM_PATH        = /home/grothoff/svn/libmicrohttpd/
-STRIP_FROM_INC_PATH    = 
+STRIP_FROM_PATH        = ../..
+STRIP_FROM_INC_PATH    = ../../src/include \
+		         src/include
 SHORT_NAMES            = NO
 JAVADOC_AUTOBRIEF      = NO
 QT_AUTOBRIEF           = NO
 MULTILINE_CPP_IS_BRIEF = NO
-DETAILS_AT_TOP         = NO
 INHERIT_DOCS           = NO
 SEPARATE_MEMBER_PAGES  = NO
 TAB_SIZE               = 8
@@ -75,7 +75,6 @@ GENERATE_DEPRECATEDLIST= NO
 ENABLED_SECTIONS       = 
 MAX_INITIALIZER_LINES  = 30
 SHOW_USED_FILES        = YES
-SHOW_DIRECTORIES       = YES
 FILE_VERSION_FILTER    = 
 #---------------------------------------------------------------------------
 # configuration options related to warning and progress messages
@@ -90,16 +89,14 @@ WARN_LOGFILE           =
 #---------------------------------------------------------------------------
 # configuration options related to the input files
 #---------------------------------------------------------------------------
-INPUT                  = /home/grothoff/svn/libmicrohttpd/src/include \
-                         /home/grothoff/svn/libmicrohttpd/src/daemon
+INPUT                  = ../..
 INPUT_ENCODING         = UTF-8
 FILE_PATTERNS          = *.c \
                          *.h
 RECURSIVE              = YES
-EXCLUDE                = /home/grothoff/svn/libmicrohttpd/src/daemon/daemon_test.c \
-                         /home/grothoff/svn/libmicrohttpd/src/daemon/postprocessor_test.c
+EXCLUDE                = 
 EXCLUDE_SYMLINKS       = NO
-EXCLUDE_PATTERNS       = 
+EXCLUDE_PATTERNS       = */test_* */.svn/* */perf_* */tls_test_*  */examples/* */testcurl/* */testspdy/* */testzzuf/* */plibc/* */symbian/* MHD_config.h
 EXCLUDE_SYMBOLS        = MHD_DLOG
 EXAMPLE_PATH           = 
 EXAMPLE_PATTERNS       = *
@@ -134,7 +131,6 @@ HTML_FILE_EXTENSION    = .html
 HTML_HEADER            = 
 HTML_FOOTER            = 
 HTML_STYLESHEET        = 
-HTML_ALIGN_MEMBERS     = YES
 GENERATE_HTMLHELP      = NO
 GENERATE_DOCSET        = NO
 DOCSET_FEEDNAME        = "Doxygen generated docs"
@@ -249,4 +245,4 @@ DOT_CLEANUP            = YES
 #---------------------------------------------------------------------------
 # Configuration::additions related to the search engine   
 #---------------------------------------------------------------------------
-SEARCHENGINE           = NO
+SEARCHENGINE           = YES

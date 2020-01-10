@@ -14,6 +14,9 @@
 /* disable digest Auth support */
 #undef DAUTH_SUPPORT
 
+/* disable epoll support */
+#undef EPOLL_SUPPORT
+
 /* This is a FreeBSD system */
 #undef FREEBSD
 
@@ -25,6 +28,9 @@
 
 /* Have clock_gettime */
 #undef HAVE_CLOCK_GETTIME
+
+/* Define to 1 if you have the <curl/curl.h> header file. */
+#undef HAVE_CURL_CURL_H
 
 /* Define to 1 if you have the declaration of `TCP_CORK', and to 0 if you
    don't. */
@@ -94,6 +100,27 @@
 /* Define to 1 if you have the <netinet/tcp.h> header file. */
 #undef HAVE_NETINET_TCP_H
 
+/* Define to 1 if you have the <openssl/engine.h> header file. */
+#undef HAVE_OPENSSL_ENGINE_H
+
+/* Define to 1 if you have the <openssl/err.h> header file. */
+#undef HAVE_OPENSSL_ERR_H
+
+/* Define to 1 if you have the <openssl/evp.h> header file. */
+#undef HAVE_OPENSSL_EVP_H
+
+/* Define to 1 if you have the <openssl/pem.h> header file. */
+#undef HAVE_OPENSSL_PEM_H
+
+/* Define to 1 if you have the <openssl/rand.h> header file. */
+#undef HAVE_OPENSSL_RAND_H
+
+/* Define to 1 if you have the <openssl/rsa.h> header file. */
+#undef HAVE_OPENSSL_RSA_H
+
+/* Define to 1 if you have the <openssl/sha.h> header file. */
+#undef HAVE_OPENSSL_SHA_H
+
 /* Define to 1 if you have the <plibc.h> header file. */
 #undef HAVE_PLIBC_H
 
@@ -109,6 +136,12 @@
 /* Do we have sockaddr_in.sin_len? */
 #undef HAVE_SOCKADDR_IN_SIN_LEN
 
+/* SOCK_NONBLOCK is defined in a socket header */
+#undef HAVE_SOCK_NONBLOCK
+
+/* Define to 1 if you have the <spdylay/spdylay.h> header file. */
+#undef HAVE_SPDYLAY_SPDYLAY_H
+
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
 
@@ -123,6 +156,9 @@
 
 /* Define to 1 if you have the <string.h> header file. */
 #undef HAVE_STRING_H
+
+/* Define to 1 if you have the <sys/epoll.h> header file. */
+#undef HAVE_SYS_EPOLL_H
 
 /* Define to 1 if you have the <sys/mman.h> header file. */
 #undef HAVE_SYS_MMAN_H
@@ -202,8 +238,20 @@
 /* Defined if libcurl supports HTTPS */
 #undef LIBCURL_PROTOCOL_HTTPS
 
+/* Defined if libcurl supports IMAP */
+#undef LIBCURL_PROTOCOL_IMAP
+
 /* Defined if libcurl supports LDAP */
 #undef LIBCURL_PROTOCOL_LDAP
+
+/* Defined if libcurl supports POP3 */
+#undef LIBCURL_PROTOCOL_POP3
+
+/* Defined if libcurl supports RTSP */
+#undef LIBCURL_PROTOCOL_RTSP
+
+/* Defined if libcurl supports SMTP */
+#undef LIBCURL_PROTOCOL_SMTP
 
 /* Defined if libcurl supports TELNET */
 #undef LIBCURL_PROTOCOL_TELNET
@@ -280,6 +328,9 @@
 
 /* This is a BSD system */
 #undef SOMEBSD
+
+/* disable libmicrospdy support */
+#undef SPDY_SUPPORT
 
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS

@@ -53,13 +53,14 @@ host_triplet = @host@
 check_PROGRAMS = test_tls_options$(EXEEXT) \
 	test_tls_authentication$(EXEEXT) \
 	test_https_multi_daemon$(EXEEXT) test_https_get$(EXEEXT) \
-	test_https_get_select$(EXEEXT) \
+	test_https_sni$(EXEEXT) test_https_get_select$(EXEEXT) \
 	test_https_get_parallel$(EXEEXT) \
 	test_https_get_parallel_threads$(EXEEXT) \
 	test_https_session_info$(EXEEXT) test_https_time_out$(EXEEXT) \
 	test_empty_response$(EXEEXT)
 TESTS = test_tls_options$(EXEEXT) test_https_multi_daemon$(EXEEXT) \
-	test_https_get$(EXEEXT) test_https_get_select$(EXEEXT) \
+	test_https_get$(EXEEXT) test_https_sni$(EXEEXT) \
+	test_https_get_select$(EXEEXT) \
 	test_https_get_parallel$(EXEEXT) \
 	test_https_get_parallel_threads$(EXEEXT) \
 	test_https_session_info$(EXEEXT) test_https_time_out$(EXEEXT) \
@@ -71,7 +72,8 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/libcurl.m4 \
 	$(top_srcdir)/m4/libgcrypt.m4 $(top_srcdir)/m4/libtool.m4 \
 	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
 	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
-	$(top_srcdir)/acinclude.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/openssl.m4 $(top_srcdir)/acinclude.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -128,6 +130,12 @@ test_https_session_info_OBJECTS =  \
 test_https_session_info_DEPENDENCIES =  \
 	$(top_builddir)/src/testcurl/libcurl_version_check.a \
 	$(top_builddir)/src/microhttpd/libmicrohttpd.la
+am_test_https_sni_OBJECTS = test_https_sni.$(OBJEXT) \
+	tls_test_common.$(OBJEXT)
+test_https_sni_OBJECTS = $(am_test_https_sni_OBJECTS)
+test_https_sni_DEPENDENCIES =  \
+	$(top_builddir)/src/testcurl/libcurl_version_check.a \
+	$(top_builddir)/src/microhttpd/libmicrohttpd.la
 am_test_https_time_out_OBJECTS = test_https_time_out.$(OBJEXT) \
 	tls_test_common.$(OBJEXT)
 test_https_time_out_OBJECTS = $(am_test_https_time_out_OBJECTS)
@@ -178,7 +186,7 @@ SOURCES = $(test_empty_response_SOURCES) $(test_https_get_SOURCES) \
 	$(test_https_get_parallel_threads_SOURCES) \
 	$(test_https_get_select_SOURCES) \
 	$(test_https_multi_daemon_SOURCES) \
-	$(test_https_session_info_SOURCES) \
+	$(test_https_session_info_SOURCES) $(test_https_sni_SOURCES) \
 	$(test_https_time_out_SOURCES) \
 	$(test_tls_authentication_SOURCES) $(test_tls_options_SOURCES)
 DIST_SOURCES = $(test_empty_response_SOURCES) \
@@ -186,7 +194,7 @@ DIST_SOURCES = $(test_empty_response_SOURCES) \
 	$(test_https_get_parallel_threads_SOURCES) \
 	$(test_https_get_select_SOURCES) \
 	$(test_https_multi_daemon_SOURCES) \
-	$(test_https_session_info_SOURCES) \
+	$(test_https_session_info_SOURCES) $(test_https_sni_SOURCES) \
 	$(test_https_time_out_SOURCES) \
 	$(test_tls_authentication_SOURCES) $(test_tls_options_SOURCES)
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
@@ -267,6 +275,7 @@ EXT_LIB_PATH = @EXT_LIB_PATH@
 FGREP = @FGREP@
 GREP = @GREP@
 HAVE_CURL_BINARY = @HAVE_CURL_BINARY@
+HAVE_MAKEINFO_BINARY = @HAVE_MAKEINFO_BINARY@
 HAVE_SOCAT = @HAVE_SOCAT@
 HAVE_ZZUF = @HAVE_ZZUF@
 INSTALL = @INSTALL@
@@ -283,6 +292,9 @@ LIBGCRYPT_CONFIG = @LIBGCRYPT_CONFIG@
 LIBGCRYPT_LIBS = @LIBGCRYPT_LIBS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
+LIBSPDY_VERSION_AGE = @LIBSPDY_VERSION_AGE@
+LIBSPDY_VERSION_CURRENT = @LIBSPDY_VERSION_CURRENT@
+LIBSPDY_VERSION_REVISION = @LIBSPDY_VERSION_REVISION@
 LIBTOOL = @LIBTOOL@
 LIB_VERSION_AGE = @LIB_VERSION_AGE@
 LIB_VERSION_CURRENT = @LIB_VERSION_CURRENT@
@@ -319,6 +331,8 @@ RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
+SPDY_LIBDEPS = @SPDY_LIBDEPS@
+SPDY_LIB_LDFLAGS = @SPDY_LIB_LDFLAGS@
 STRIP = @STRIP@
 VERSION = @VERSION@
 _libcurl_config = @_libcurl_config@
@@ -465,6 +479,15 @@ test_https_get_LDADD = \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
   @LIBCURL@ -lgnutls @LIBGCRYPT_LIBS@
 
+test_https_sni_SOURCES = \
+  test_https_sni.c \
+  tls_test_common.c
+
+test_https_sni_LDADD = \
+  $(top_builddir)/src/testcurl/libcurl_version_check.a \
+  $(top_builddir)/src/microhttpd/libmicrohttpd.la \
+  @LIBCURL@ -lgnutls @LIBGCRYPT_LIBS@
+
 test_https_get_select_SOURCES = \
   test_https_get_select.c \
   tls_test_common.c
@@ -538,6 +561,9 @@ test_https_multi_daemon$(EXEEXT): $(test_https_multi_daemon_OBJECTS) $(test_http
 test_https_session_info$(EXEEXT): $(test_https_session_info_OBJECTS) $(test_https_session_info_DEPENDENCIES) $(EXTRA_test_https_session_info_DEPENDENCIES) 
 	@rm -f test_https_session_info$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_https_session_info_OBJECTS) $(test_https_session_info_LDADD) $(LIBS)
+test_https_sni$(EXEEXT): $(test_https_sni_OBJECTS) $(test_https_sni_DEPENDENCIES) $(EXTRA_test_https_sni_DEPENDENCIES) 
+	@rm -f test_https_sni$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_https_sni_OBJECTS) $(test_https_sni_LDADD) $(LIBS)
 test_https_time_out$(EXEEXT): $(test_https_time_out_OBJECTS) $(test_https_time_out_DEPENDENCIES) $(EXTRA_test_https_time_out_DEPENDENCIES) 
 	@rm -f test_https_time_out$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_https_time_out_OBJECTS) $(test_https_time_out_LDADD) $(LIBS)
@@ -561,6 +587,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_https_get_select.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_https_multi_daemon.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_https_session_info.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_https_sni.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_https_time_out.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_tls_authentication.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_tls_options.Po@am__quote@

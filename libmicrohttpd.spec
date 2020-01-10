@@ -1,7 +1,7 @@
 Summary: Lightweight library for embedding a webserver in applications
 Name: libmicrohttpd
-Version: 0.9.27
-Release: 1%{?dist}
+Version: 0.9.33
+Release: 2%{?dist}
 Group: Development/Libraries
 License: LGPLv2+
 BuildRoot: %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
@@ -59,17 +59,12 @@ Doxygen documentation for libmicrohttpd and some example source code
 %prep
 %setup -q
 
-# The doxygen file contains references to /home/grothoff/svn/libmicrohttpd/... replace these with .
-sed s/\\/home\\/grothoff\\/svn\\/libmicrohttpd/./ doc/Doxyfile > tmp
-unlink doc/Doxyfile
-mv tmp doc/Doxyfile
-
 %build
 # Required because patches modify .am files
 # autoreconf --force
 %configure --disable-static --with-gnutls
 make %{?_smp_mflags}
-doxygen doc/Doxyfile
+cd doc/doxygen && make full && cd -
 
 # Disabled for now due to problems reported at
 # https://gnunet.org/bugs/view.php?id=1619
@@ -127,6 +122,17 @@ fi
 %doc html
 
 %changelog
+* Fri Jan 24 2014 Daniel Mach <dmach@redhat.com> - 0.9.33-2
+- Mass rebuild 2014-01-24
+
+* Tue Jan 14 2014 Václav Pavlín <vpavlin@redhat.com> - 0.9.33
+- Update to latest uptsream release 0.9.33 due to
+  security issues.
+  Resolves: rhbz#1039393, rhbz#1039387
+
+* Fri Dec 27 2013 Daniel Mach <dmach@redhat.com> - 0.9.27-2
+- Mass rebuild 2013-12-27
+
 * Mon May 6 2013 Václav Pavlín <vpavlin@redhat.com> - 0.9.27-1
 - Update to latest uptsream release 0.9.27
 

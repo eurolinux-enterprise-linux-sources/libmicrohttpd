@@ -1,5 +1,6 @@
 Primary developers:
 Christian Grothoff <christian@grothoff.org> (maintainer)
+Andrey Uzunov <andrey.uzunov@gmail.com> (maintainer for libmicrospdy)
 Nils Durner <durner@gnunet.org> (W32 port)
 Sagie Amir (TLS/SSL support using GNUtls)
 Richard Alimi <rich@velvetsea.net> (performance)
@@ -21,6 +22,8 @@ Matthew Moore
 Colin Caughie <c.caughie@indigovision.com>
 David Carvalho <andaris@gmail.com>
 David Reiss <dreiss@facebook.com>
+Matt Holiday 
+Michael Cronenworth <mike@cchtml.com>
 Mika Raento <mikie@iki.fi>
 Mike Crowe <mac@mcrowe.com>
 John Muth <muth@parascale.com>
@@ -41,6 +44,7 @@ Brecht Sanders <brecht@sanders.org>
 Jan Janak <jan@janakj.org>
 Matthew Mundell <matthew.mundell@greenbone.net>
 Scott Goldman <scottjg@github.com>
+Jared Cantwell
 
 Documentation contributions also came from:
 Marco Maggi <marco.maggi-ipsu@poste.it>

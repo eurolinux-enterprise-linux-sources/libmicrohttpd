@@ -1,17 +1,17 @@
 /*
   This file is part of libmicrohttpd
   (C) 2007 Christian Grothoff
-  
+
   libmicrohttpd is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published
-  by the Free Software Foundation; either version 2, or (at your
+  by the Free Software Foundation; either version 3, or (at your
   option) any later version.
-  
+
   libmicrohttpd is distributed in the hope that it will be useful, but
   WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   General Public License for more details.
-  
+
   You should have received a copy of the GNU General Public License
   along with libmicrohttpd; see the file COPYING.  If not, write to the
   Free Software Foundation, Inc., 59 Temple Place - Suite 330,
@@ -19,7 +19,7 @@
 */
 
 /**
- * @file mhds_get_test.c
+ * @file test_https_get.c
  * @brief  Testcase for libmicrohttpd HTTPS GET operations
  * @author Sagie Amir
  */
@@ -37,8 +37,11 @@ extern const char srv_self_signed_cert_pem[];
 extern const char srv_signed_cert_pem[];
 extern const char srv_signed_key_pem[];
 
+
 static int
-test_cipher_option (FILE * test_fd, char *cipher_suite, int proto_version)
+test_cipher_option (FILE * test_fd,
+		    const char *cipher_suite,
+		    int proto_version)
 {
 
   int ret;
@@ -62,9 +65,12 @@ test_cipher_option (FILE * test_fd, char *cipher_suite, int proto_version)
   return ret;
 }
 
+
 /* perform a HTTP GET request via SSL/TLS */
-int
-test_secure_get (FILE * test_fd, char *cipher_suite, int proto_version)
+static int
+test_secure_get (FILE * test_fd,
+		 const char *cipher_suite,
+		 int proto_version)
 {
   int ret;
   struct MHD_Daemon *d;
@@ -88,22 +94,24 @@ test_secure_get (FILE * test_fd, char *cipher_suite, int proto_version)
   return ret;
 }
 
+
 int
 main (int argc, char *const *argv)
 {
   unsigned int errorCount = 0;
+  const char *aes256_sha_tlsv1   = "AES256-SHA";
+  const char *aes256_sha_sslv3   = "AES256-SHA";
+  const char *des_cbc3_sha_tlsv1 = "DES-CBC3-SHA";
 
-  if (!gcry_check_version (GCRYPT_VERSION))
-    abort ();
+  gcry_control (GCRYCTL_ENABLE_QUICK_RANDOM, 0);
+#ifdef GCRYCTL_INITIALIZATION_FINISHED
+  gcry_control (GCRYCTL_INITIALIZATION_FINISHED, 0);
+#endif
   if (0 != curl_global_init (CURL_GLOBAL_ALL))
     {
       fprintf (stderr, "Error: %s\n", strerror (errno));
       return -1;
     }
-
-  char *aes256_sha_tlsv1   = "AES256-SHA";
-  char *aes256_sha_sslv3   = "AES256-SHA";
-  char *des_cbc3_sha_tlsv1 = "DES-CBC3-SHA";
 
   if (curl_uses_nss_ssl() == 0)
     {
@@ -118,7 +126,6 @@ main (int argc, char *const *argv)
     test_secure_get (NULL, aes256_sha_sslv3, CURL_SSLVERSION_SSLv3);
   errorCount +=
     test_cipher_option (NULL, des_cbc3_sha_tlsv1, CURL_SSLVERSION_TLSv1);
-
   print_test_result (errorCount, argv[0]);
 
   curl_global_cleanup ();

@@ -1,3 +1,250 @@
+Sat Dec 21 17:26:08 CET 2013
+	Fixed an issue with a missing argument in the postexample.
+	Fixed issue with bogus offset increment involving sendfile
+	on GNU/Linux.  Adding support for SNI.
+	Releasing 0.9.33. -CG
+
+Mon Dec  9 21:41:57 CET 2013
+	Fix for per-worker daemon pipes enabled with
+	MHD_USE_SUSPEND_RESUME that were not closed in
+	MHD_stop_daemon. -MH
+
+Sat Dec  7 00:44:49 CET 2013
+	Fixing warnings and build issue if --disable-https is given
+	to configure. -CG
+
+Tue Dec  3 21:25:56 CET 2013
+	Security fix: do not read past 0-terminator when unescaping
+	strings (thanks to Florian Weimer for reporting).
+	Releasing 0.9.32. -CG
+
+Tue Dec  3 21:05:38 CET 2013
+	Signaling n times for shutdown works, but for resume we need to
+	wake up the correct daemon. Even if we signal n times in that
+	case also, there's no guarantee that some daemon can't run
+	through its select loop more than once before the daemon we want
+	to wake up gets a chance to read.  Thus we need a signal pipe
+	per thread in the thread pool IF MHD_suspend_connection is used.
+	This introduces a new flag MHD_USE_SUSPEND_RESUME to add those
+	additional pipes and only allow MHD_suspend_connection to be
+	used in conjunction with this flag.
+
+	Also, as MHD_resume_connection() will be called on a non-daemon
+	thread, but none of the queue insert/delete calls are thread safe,
+	we need to be concerned about (a) corrupting the queue, and (b)
+	having to add mutex protection around every access to the queues,
+	including loops through timer queues, etc. This wasn't a problem
+	before adding resume; even suspend should be safe since it happens
+	in a callback from the daemon.
+
+	I think it's easier to (a) have MHD_suspend_connection() move the
+	connection to a suspended queue, (b) have MHD_resume_connection()
+	mark the connection as resuming, and then (c) do all the actual
+	queue manipulations in MHD_select (poll, epoll, etc.) to move the
+	resumed connections back to their normal queues, in response to
+	the wake up. The changes are simpler & cleaner. There is a cost to
+	the basic select loop that is avoided by making suspend/resume a
+	startup option. The per-worker pipes can then also be enabled only
+	with that option set. -MH
+
+Fri Nov 29 20:17:03 CET 2013
+	Eliminating theoretical stack overflow by limiting length
+	of URIs in authentication headers to 32k (only applicable
+	if the application explicitly raised the memroy limits,
+	and only applies to MHD_digest_auth_check). Issue was
+	reported by Florian Weimer. -CG
+
+Tue Nov 26 01:26:15 CET 2013
+	Fix race on shutdown signal with thread pool on non-Linux
+	systems by signalling n times for n threads. -CG
+
+Sun Nov 24 13:41:15 CET 2013
+	Introduce state to mark connections in suspended state (with
+	epoll); add missing locking operations in MHD_suspend_connection.
+	Fix definition of MHD_TLS_CONNECTION_INIT.  -MH/JC
+
+Wed Oct 30 09:34:20 CET 2013
+	Fixing issue in PostProcessor when getting partial boundary
+	at the beginning, expanding test suite. -CG
+
+Sun Oct 27 15:19:44 CET 2013
+	Implementing faster processing of upload data in multipart
+	encoding (thanks to performance analysis by Adam Homolya). -CG
+
+Thu Oct 24 10:40:03 CEST 2013
+	Adding support for connection flow control via
+	MHD_suspend_connection and MHD_resume_connection. -CG
+
+Sat Oct 19 16:40:32 CEST 2013
+	Releasing libmicrohttpd 0.9.31. -CG
+
+Mon Sep 23 20:24:48 CEST 2013
+	Fixing build issues on OS X with CLOCK_MONOTONIC not being
+	implemented on OS X. -CG
+
+Mon Sep 23 14:15:00 CEST 2013
+	Make libmicrohttpd play nicely with upcoming libgcrypt 1.6.0. -CG
+
+Fri Sep 20 17:01:37 CEST 2013
+	Improved configure checks for cURL. -CG
+
+Wed Sep 18 18:29:24 CEST 2013
+	Signal connection termination as OK (and not as ERROR) if the
+	stream was terminated by the callback returning
+	MHD_CONTENT_READER_END_OF_STREAM. Also, release response
+	mutex before calling the termination callback, to avoid
+	possible deadlock if the client destroys the response in
+	the termination callback (due to non-recursiveness of the
+	lock). -CG
+
+Wed Sep 18 14:31:35 CEST 2013
+	Adding #define MHD_HTTP_HEADER_ACCESS_CONTROL_ALLOW_ORIGIN. -CG
+
+Tue Sep 17 21:32:47 CEST 2013
+	Also pass MHD connection handle in URI log callback. -CG
+
+Fri Sep  6 10:00:44 CEST 2013
+	Improved check for proper OpenSSL version for
+	libmicrospdy. -CG
+
+Wed Sep  4 17:23:15 CEST 2013
+	Set IPV6_V6ONLY socket option correctly when IPv6 is
+	enabled (MHD_USE_IPv6) but not dual stack
+	(MHD_USE_DUAL_STACK) -MW
+
+Mon Sep  2 22:59:45 CEST 2013
+	Fix use-after-free in epoll()-mode on read error.
+	Releasing libmicrohttpd 0.9.30. -CG
+
+Sun Sep  1 21:55:53 CEST 2013
+	Fixing build issues on FreeBSD. -CG
+
+Fri Aug 30 13:53:04 CEST 2013
+	Started to implement #3008 (RFC 2616, section 8.1.4
+	says HTTP server SHOULD terminate connection if the
+	client closes it for writing via TCP FIN, so we should
+	continue to try to read and react differently
+	if recv() returns zero). -CG
+
+Wed Aug 28 18:40:47 CEST 2013
+	Fix #3007 (build issue if messages are disabled). -CG
+
+Tue Aug 27 18:39:08 CEST 2013
+	Fix build issue if SOCK_NONBLOCK/EPOLL_CLOEXEC are not
+	defined (as is the case on older glibc versions). -CG
+
+Fri Aug 23 14:28:02 CEST 2013
+	Releasing libmicrohttpd 0.9.29. -CG
+
+Mon Aug 12 23:51:18 CEST 2013
+	Updated manual, documenting W32 select/shutdown issue. -CG
+
+Sat Aug 10 21:01:18 CEST 2013
+	Fixed #2983. -CG
+
+Sat Aug 10 20:39:27 CEST 2013
+	Use 'errno' to indicate why 'MHD_add_connection' failed
+	(#2984). -CG
+
+Sat Aug 10 17:31:31 CEST 2013
+	Disable use of 'shutdown' on W32 always as winsock
+	doesn't properly behave with half-closed connections
+	(see http://www.chilkatsoft.com/p/p_299.asp). -CG/LRN
+
+Thu Aug  8 07:55:07 CEST 2013
+	Fixing issue with pipelining not working as desired. -CG
+
+Wed Aug  7 08:17:40 CEST 2013
+	Removing dependency on liberty (on W32). -MC
+
+Fri Aug  2 20:55:47 CEST 2013
+	Fix HTTP 1.1 compliance with respect to not returning
+	content-length headers for successful "CONNECT" requests.
+	Note that for unsuccessful "CONNECT" requests with an
+	empty response body, users must now explicitly set the
+	content-length header. -CG
+
+Sun Jul 28 16:35:17 CEST 2013
+	Fixing build issue (missing #ifdef) in conjunction with
+	--disable-messages. -blueness
+
+Sat Jul 20 12:35:40 CEST 2013
+	Fixing combination of MHD_USE_SSL and MHD_USE_EPOLL_LINUX_ONLY. -CG
+
+Fri Jul 19 09:57:27 CEST 2013
+	Fix issue where connections were not cleaned up when
+	'MHD_run_from_select' was used.  Adding experimental
+	TURBO mode.
+	Releasing libmicrohttpd 0.9.28. -CG
+
+Sun Jul 14 19:57:56 CEST 2013
+	Removing 'shutdown' calls that happen just before close or
+	that are for read-only and for a client that has already
+	stopped sending anyway (thus reducing number of system calls
+	slightly). -CG
+
+Sun Jul 14 19:37:37 CEST 2013
+	Name MHD worker threads on glibc >= 2.12. -,L4X[o](B
+
+Fri Jul  5 12:05:01 CEST 2013
+	Added MHD_OPTION_CONNECTION_MEMORY_INCREMENT to allow users
+	to specify a custom value for incrementing read buffer
+	sizes (#2899). -MH
+
+Fri Jun 28 14:05:15 CEST 2013
+	If we shutdown connection for reading on POST due to error,
+	really do not process further requests even if we already
+	read the next request from the connection.  Furthermore, do
+	not shutdown connections for reading on GET/HEAD/etc. just
+	because	the application queued a response immediately ---
+	reserve that behavior for PUT/POST. -CG
+
+Tue Jun 25 15:08:30 CEST 2013
+	Added option 'MHD_USE_DUAL_STACK' to support a single
+	daemon for IPv4 and IPv6 without the application having
+	to do the binding. -CG
+
+Mon Jun 24 22:33:34 CEST 2013
+	Finished integration with epoll, including benchmarking and
+	documentation. -CG
+
+Sun Jun 23 15:28:13 CEST 2013
+	Added option 'MHD_USE_PIPE_FOR_SHUTDOWN' to cleanly support
+	'MHD_quiesce_daemon' with thread pools and per-connection
+	threads (we then need a pipe for shutdown, but if
+	'MHD_quiesce_daemon' is not used, we do not want to
+	require the use of a pipe; introducing the pipe after
+	the threads have been started can also fail, so the
+	application needs to tell us early on). -CG
+
+Sat Jun 22 20:24:17 CEST 2013
+	Removed locking calls for thread modes that do not need them.
+	Reorganized way to obtain connection's event loop state.
+	Added sorted XDLL for connections with default timeout to
+	avoid having to loop over all connections to determine current
+	timeout (custom per-connection timeouts are in another list
+	which is iterated each time). -CG
+
+Fri Jun 21 20:55:48 CEST 2013
+	Preparing build system and tests for epoll support. -CG
+
+Tue May 21 14:34:36 CEST 2013
+	Improving configure tests for OpenSSL and spdylay to
+	avoid build errors in libmicrospdy code if those libraries
+	are not present. -CG
+
+Mon May 20 12:29:35 CEST 2013
+	Added MHD_CONNECTION_INFO_CONNECTION_FD to allow clients
+	direct access to connection socket; useful for COMET
+	applications that need to disable NAGLE (#2886). -CG
+
+Mon May 15 12:49:01 CEST 2013
+	Fixing #2859. -CG
+
+Sun May  5 21:44:08 CEST 2013
+	Merged libmicrospdy code with libmicrohttpd build system
+	(no major changes to libmicrospdy itself yet). -CG
+
 Sun May  5 20:13:59 CEST 2013
 	Improved documentation and code style a bit.
 	Releasing libmicrohttpd 0.9.27. -CG

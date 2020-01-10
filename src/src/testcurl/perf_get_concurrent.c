@@ -306,7 +306,15 @@ testExternalGet (int port)
       if (MHD_YES != tret) tt = 1;
       tv.tv_sec = tt / 1000;
       tv.tv_usec = 1000 * (tt % 1000);
-      select (max + 1, &rs, &ws, &es, &tv);
+      if (-1 == select (max + 1, &rs, &ws, &es, &tv))
+	{
+	  if (EINTR == errno)
+	    continue;
+	  fprintf (stderr,
+		   "select failed: %s\n",
+		   strerror (errno));
+	  break;	      	  
+	}
       MHD_run (d);
     }
   stop ("external select");
@@ -335,6 +343,10 @@ main (int argc, char *const *argv)
   errorCount += testInternalGet (port++, MHD_USE_POLL);
   errorCount += testMultithreadedGet (port++, MHD_USE_POLL);
   errorCount += testMultithreadedPoolGet (port++, MHD_USE_POLL);
+#endif
+#if EPOLL_SUPPORT
+  errorCount += testInternalGet (port++, MHD_USE_EPOLL_LINUX_ONLY);
+  errorCount += testMultithreadedPoolGet (port++, MHD_USE_EPOLL_LINUX_ONLY);
 #endif
   MHD_destroy_response (response);
   if (errorCount != 0)
